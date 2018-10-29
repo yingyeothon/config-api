@@ -1,0 +1,8 @@
+.serverless/
+.webpack/
+node_modules/
+
+.env
+
+# config files
+distribution-authentication-tokens

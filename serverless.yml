@@ -1,0 +1,59 @@
+service: yyt-config-api
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: production
+  region: ap-northeast-2
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 's3:*'
+      Resource: '*'
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+functions:
+  authorizeToken:
+    handler: src/index.authorizeToken
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: /auth/{systemKey}
+          method: put
+          request:
+            parameters:
+              paths:
+                systemKey: true
+    environment:
+      CONFIG_SECRET: ${env:CONFIG_SECRET}
+  deleteToken:
+    handler: src/index.deleteToken
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: /auth/{systemKey}
+          method: delete
+          request:
+            parameters:
+              paths:
+                systemKey: true
+    environment:
+      CONFIG_SECRET: ${env:CONFIG_SECRET}
+  listAuthorizedTokens:
+    handler: src/index.listAuthorizedTokens
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: /auth/{systemKey}
+          method: get
+          request:
+            parameters:
+              paths:
+                systemKey: true
+    environment:
+      CONFIG_SECRET: ${env:CONFIG_SECRET}
