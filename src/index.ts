@@ -6,24 +6,33 @@ const bucketName = 'yyt-config';
 const loadTokens = async (systemKey: string) => {
   const s3 = new AWS.S3();
 
-  const tokensObject = await s3
-    .getObject({
-      Bucket: bucketName,
-      Key: systemKey,
-    })
-    .promise();
-  if (!tokensObject.Body) {
-    return [];
-  }
+  const objectParams = {
+    Bucket: bucketName,
+    Key: systemKey,
+  };
+  try {
+    const headObject = await s3.headObject(objectParams).promise();
+    console.log(headObject);
 
-  if (!(tokensObject.Body instanceof Buffer)) {
-    throw new ApiError('Invalid S3 Body type.', 500);
+    const tokensObject = await s3.getObject(objectParams).promise();
+    if (!tokensObject.Body) {
+      return [];
+    }
+    if (!(tokensObject.Body instanceof Buffer)) {
+      throw new ApiError('Invalid S3 Body type.', 500);
+    }
+    const tokens = tokensObject.Body.toString('utf-8');
+    return tokens
+      .split('\n')
+      .map(e => e.trim())
+      .filter(Boolean);
+  } catch (error) {
+    if (error.code === 'NotFound') {
+      return [];
+    }
+    console.error(error);
+    throw error;
   }
-  const tokens = tokensObject.Body.toString('utf-8');
-  return tokens
-    .split('\n')
-    .map(e => e.trim())
-    .filter(Boolean);
 };
 
 const ensureSecret = (req: IApiRequest<{}>) => {
