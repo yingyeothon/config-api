@@ -94,3 +94,13 @@ export const listAuthorizedTokens = api(async req => {
     tokens,
   };
 });
+
+export const validateToken = api(async req => {
+  const { systemKey } = req.pathParameters;
+  const normalizedToken = (req.header('X-Auth-Token') || '').trim();
+  if (!normalizedToken) {
+    return false;
+  }
+  const tokens = await loadTokens(systemKey);
+  return tokens.includes(normalizedToken);
+});
