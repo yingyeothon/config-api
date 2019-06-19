@@ -7,8 +7,16 @@ provider:
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
-        - 's3:*'
-      Resource: '*'
+        - 's3:HeadObject'
+        - 's3:GetObject'
+        - 's3:PutObject'
+        - 's3:PutObjectAcl'
+        - 's3:DeleteObject'
+      Resource:
+        - 'arn:aws:s3:::${env:CONFIG_BUCKET}/*'
+  environment:
+    CONFIG_BUCKET: ${env:CONFIG_BUCKET}
+    CONFIG_SECRET: ${env:CONFIG_SECRET}
 
 plugins:
   - serverless-webpack
@@ -27,8 +35,6 @@ functions:
             parameters:
               paths:
                 systemKey: true
-    environment:
-      CONFIG_SECRET: ${env:CONFIG_SECRET}
   deleteToken:
     handler: src/index.deleteToken
     memorySize: 128
@@ -41,8 +47,6 @@ functions:
             parameters:
               paths:
                 systemKey: true
-    environment:
-      CONFIG_SECRET: ${env:CONFIG_SECRET}
   listAuthorizedTokens:
     handler: src/index.listAuthorizedTokens
     memorySize: 128
@@ -55,8 +59,6 @@ functions:
             parameters:
               paths:
                 systemKey: true
-    environment:
-      CONFIG_SECRET: ${env:CONFIG_SECRET}
   validateToken:
     handler: src/index.validateToken
     memorySize: 128
@@ -69,3 +71,10 @@ functions:
             parameters:
               paths:
                 systemKey: true
+
+resources:
+  Resources:
+    ConfigBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${env:CONFIG_BUCKET}

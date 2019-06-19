@@ -26,6 +26,6 @@
     "trailingComma": "all"
   },
   "dependencies": {
-    "api-gateway-rest-handler": "^0.1.0"
+    "api-gateway-rest-handler": "^0.1.3"
   }
 }

@@ -1,11 +1,11 @@
 import { api, ApiError, IApiRequest } from 'api-gateway-rest-handler';
 import * as AWS from 'aws-sdk';
 
-const bucketName = 'yyt-config';
+const bucketName = process.env.CONFIG_BUCKET!;
+const configSecret = process.env.CONFIG_SECRET!;
+const s3 = new AWS.S3();
 
 const loadTokens = async (systemKey: string) => {
-  const s3 = new AWS.S3();
-
   const objectParams = {
     Bucket: bucketName,
     Key: systemKey,
@@ -36,8 +36,7 @@ const loadTokens = async (systemKey: string) => {
 };
 
 const ensureSecret = (req: IApiRequest<{}>) => {
-  const envSecret = process.env.CONFIG_SECRET;
-  if (!envSecret || envSecret !== req.header('X-Auth-Secret')) {
+  if (!configSecret || configSecret !== req.header('X-Auth-Secret')) {
     throw new ApiError('Forbidden', 403);
   }
 };
@@ -52,7 +51,6 @@ export const authorizeToken = api(async req => {
   }
 
   const tokens = await loadTokens(systemKey);
-  const s3 = new AWS.S3();
   await s3
     .putObject({
       Bucket: bucketName,
@@ -73,7 +71,6 @@ export const deleteToken = api(async req => {
   }
 
   const tokens = await loadTokens(systemKey);
-  const s3 = new AWS.S3();
   await s3
     .putObject({
       Bucket: bucketName,
